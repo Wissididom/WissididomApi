@@ -1,0 +1,6 @@
+@WissididomApi_HostAddress = http://localhost:5072
+
+GET {{WissididomApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
