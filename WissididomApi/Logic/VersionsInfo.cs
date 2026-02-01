@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Reflection;
 
 namespace WissididomApi.Logic;
@@ -7,7 +6,7 @@ public class VersionsInfo : IVersionsInfo
 {
     public string GetAssemblyVersions()
     {
-        var assemblyNames = new[] { "WissididomApi" };
+        /*var assemblyNames = new[] { "WissididomApi" };
         var assemblyInformation = $"{"Assembly",-20} {"Assemblyversion",-20} {"Fileversion",-20} {"Productversion",-20}";
         foreach (var assembly in assemblyNames)
         {
@@ -18,15 +17,23 @@ public class VersionsInfo : IVersionsInfo
             var productVersion  = FileVersionInfo.GetVersionInfo(assemblyFile.Location).ProductVersion;
             assemblyInformation += $"\n{assembly,-20} {assemblyVersion,-20} {fileVersion,-20} {productVersion,-20}";
         }
-        return assemblyInformation;
+        return assemblyInformation;*/
+        var assembly = Assembly.GetExecutingAssembly();
+        var assemblyVersion = assembly.GetName().Version?.ToString();
+        var fileVersion = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
+        var productVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        return
+            $"{"Assembly",-20} {"Assemblyversion",-20} {"Fileversion",-20} {"Productversion",-20}\n" +
+            $"{assembly.GetName().Name,-20} {assemblyVersion,-20} {fileVersion,-20} {productVersion,-20}";
     }
 
     public string GetWissididomApiAssemblyVersion()
     {
-        const string assembly = "WissididomApi";
+        /*const string assembly = "WissididomApi";
         var assemblyFile = GetAssemblyByName(assembly);
         var assemblyVersion = assemblyFile?.GetName().Version?.ToString() ?? assembly;
-        return assemblyVersion;
+        return assemblyVersion;*/
+        return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown";
     }
 
     private Assembly? GetAssemblyByName(string assemblyName)
