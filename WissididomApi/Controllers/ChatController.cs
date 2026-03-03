@@ -1,7 +1,5 @@
 using Humanizer;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using OpenTelemetry.Trace;
 using WissididomApi.JsonModels.Api;
 using WissididomApi.Logic;
 
