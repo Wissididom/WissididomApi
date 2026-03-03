@@ -1,5 +1,6 @@
 using Humanizer;
 using Microsoft.AspNetCore.Mvc;
+using WissididomApi.JsonModels.Api;
 using WissididomApi.Logic;
 
 namespace WissididomApi.Controllers;
@@ -8,23 +9,40 @@ namespace WissididomApi.Controllers;
 public class ChatController(TwitchApi twitchApi) : ControllerBase
 {
     [HttpGet("settings")]
-    public async Task<string> ChatSettings(string broadcasterId, string? moderatorId = null)
+    public async Task<IActionResult> ChatSettings([FromQuery] ChatSettingsRequest request)
     {
         try
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var broadcasterId = request.BroadcasterId;
+            if (broadcasterId is null)
+            {
+                var broadcasterData = await twitchApi.GetUsers(null, [request.BroadcasterLogin!]);
+                if (broadcasterData is not null && broadcasterData.Length > 0)
+                    broadcasterId = broadcasterData[0].Id;
+            }
+            if (broadcasterId is null) return BadRequest("Failed to resolve broadcaster id. Did you make a typo?");
+            var moderatorId = request.ModeratorId;
+            if (moderatorId is null && request.ModeratorLogin is not null)
+            {
+                var moderatorData = await twitchApi.GetUsers(null, [request.ModeratorLogin]);
+                if (moderatorData is not null && moderatorData.Length > 0)
+                    moderatorId = moderatorData[0].Id;
+            }
             var responseArr = await twitchApi.GetChatSettings(broadcasterId, moderatorId);
             if (responseArr is null)
             {
-                return "Somehow the chat settings response is null... Maybe there was a network error on the server 🤔";
+                return StatusCode(500, "Somehow the chat settings response is null... Maybe there was a network error on the server 🤔");
             }
             if (responseArr.Length < 1)
             {
-                return "Somehow the chat settings response was empty... Maybe there was a network error on the server 🤔";
+                return StatusCode(500, "Somehow the chat settings response from Twitch was empty...");
             }
             var response = responseArr[0];
             if (response.Error is not null)
             {
-                return $"Twitch Error: {response.Error.Message}";
+                return StatusCode(response.Error.Status, $"Twitch Error: {response.Error.Message}");
             }
             List<string> modes = [];
             if (response.EmoteMode)
@@ -48,11 +66,11 @@ public class ChatController(TwitchApi twitchApi) : ControllerBase
             {
                 modes.Add("unique-chat-mode enabled");
             }
-            return modes.Count > 0 ? string.Join(" | ", modes) : "All good, no restrictions detected!";
+            return Ok(modes.Count > 0 ? string.Join(" | ", modes) : "All good, no restrictions detected!");
         }
         catch (Exception e)
         {
-            return $"Unhandled Exception: {e.Message}";
+            return StatusCode(500, $"Unhandled Exception: {e.Message}");
         }
     }
 }
