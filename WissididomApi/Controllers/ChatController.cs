@@ -15,8 +15,14 @@ public class ChatController(TwitchApi twitchApi) : ControllerBase
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var broadcasterId = request.BroadcasterId ?? (await twitchApi.GetUsers(null, [request.BroadcasterLogin!]))?[0].Id;
-            if (broadcasterId is null) return BadRequest("Failed to resolve broadcaster id");
+            var broadcasterId = request.BroadcasterId;
+            if (broadcasterId is null)
+            {
+                var broadcasterData = await twitchApi.GetUsers(null, [request.BroadcasterLogin!]);
+                if (broadcasterData is not null && broadcasterData.Length > 0)
+                    broadcasterId = broadcasterData[0].Id;
+            }
+            if (broadcasterId is null) return BadRequest("Failed to resolve broadcaster id. Did you make a typo?");
             var moderatorId = request.ModeratorId;
             if (moderatorId is null && request.ModeratorLogin is not null)
                 moderatorId = (await twitchApi.GetUsers(null, [request.ModeratorLogin]))?[0].Id;
@@ -56,11 +62,11 @@ public class ChatController(TwitchApi twitchApi) : ControllerBase
             {
                 modes.Add("unique-chat-mode enabled");
             }
-            return modes.Count > 0 ? Ok(string.Join(" | ", modes)) : Ok("All good, no restrictions detected!");
+            return Ok(modes.Count > 0 ? string.Join(" | ", modes) : "All good, no restrictions detected!");
         }
         catch (Exception e)
         {
-            return Ok($"Unhandled Exception: {e.Message}");
+            return StatusCode(500, $"Unhandled Exception: {e.Message}");
         }
     }
 }
