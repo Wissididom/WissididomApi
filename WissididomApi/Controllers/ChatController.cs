@@ -25,7 +25,11 @@ public class ChatController(TwitchApi twitchApi) : ControllerBase
             if (broadcasterId is null) return BadRequest("Failed to resolve broadcaster id. Did you make a typo?");
             var moderatorId = request.ModeratorId;
             if (moderatorId is null && request.ModeratorLogin is not null)
-                moderatorId = (await twitchApi.GetUsers(null, [request.ModeratorLogin]))?[0].Id;
+            {
+                var moderatorData = await twitchApi.GetUsers(null, [request.ModeratorLogin]);
+                if (moderatorData is not null && moderatorData.Length > 0)
+                    moderatorId = moderatorData[0].Id;
+            }
             var responseArr = await twitchApi.GetChatSettings(broadcasterId, moderatorId);
             if (responseArr is null)
             {
