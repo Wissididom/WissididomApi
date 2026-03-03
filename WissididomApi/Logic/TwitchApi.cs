@@ -42,6 +42,41 @@ public class TwitchApi
         return this._authData;
     }
 
+    public async Task<TwitchUser[]?> GetUsers(string[]? ids = null, string[]? logins = null)
+    {
+        if (_authData is null)
+        {
+            await Authenticate();
+            if (_authData is null)
+                throw new Exception("Failed to authenticate with Twitch API.");
+        }
+        List<string> queryParams = [];
+        if (ids is not null)
+            queryParams.AddRange(ids.Select(id => $"id={id}"));
+        if (logins is not null)
+            queryParams.AddRange(logins.Select(login => $"login={login}"));
+        var url = $"https://api.twitch.tv/helix/users?{string.Join('&', queryParams)}";
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _authData.AccessToken);
+        request.Headers.Add("Client-ID", _clientId);
+        var response = await _client.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            if (response.StatusCode != HttpStatusCode.Unauthorized)
+            {
+                return [new TwitchUser()
+                {
+                    Error = await response.Content.ReadFromJsonAsync<TwitchError>(),
+                }];
+            }
+            Console.WriteLine($"{response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+            await Authenticate();
+            return await GetUsers(ids, logins);
+        }
+        var responseObject  = await response.Content.ReadFromJsonAsync<GetUsersResponse>();
+        return responseObject?.Data?.Length < 1 ? [] : responseObject?.Data;
+    }
+
     public async Task<ChatSettings[]?> GetChatSettings(string broadcasterId, string? moderatorId = null)
     {
         if (_authData is null)
