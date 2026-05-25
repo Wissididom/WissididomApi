@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 using WissididomApi.JsonModels.Api;
 using WissididomApi.Logic;
 
@@ -14,9 +16,27 @@ public class LegacyChatController(TwitchApi twitchApi) : ControllerBase
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            return Redirect(
-                $"https://{Environment.GetEnvironmentVariable("NEW_DOMAIN")}/api/chat/settings?BroadcasterLogin={Uri.EscapeDataString(request.ChannelName ?? "")}"
+            var newDomain = Environment.GetEnvironmentVariable("NEW_DOMAIN");
+            if (string.IsNullOrWhiteSpace(newDomain))
+                return StatusCode(500, "NEW_DOMAIN is not configured.");
+
+            var baseUrl = $"https://{newDomain}/api/chat/settings";
+            var redirectUrl = QueryHelpers.AddQueryString(
+                baseUrl,
+                new Dictionary<string, StringValues>
+                {
+                    ["BroadcasterLogin"] = request.ChannelName ?? string.Empty
+                }
             );
+
+            if (!Uri.TryCreate(redirectUrl, UriKind.Absolute, out var parsedRedirect) ||
+                !string.Equals(parsedRedirect.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(parsedRedirect.Host, newDomain, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest("Invalid redirect target.");
+            }
+
+            return Redirect(parsedRedirect.ToString());
         }
         catch (Exception e)
         {
