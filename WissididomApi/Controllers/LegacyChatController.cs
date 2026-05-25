@@ -17,8 +17,7 @@ public class LegacyChatController : ControllerBase
                 return BadRequest(ModelState);
             var newDomain = Environment.GetEnvironmentVariable("NEW_DOMAIN");
             if (string.IsNullOrWhiteSpace(newDomain))
-                //return StatusCode(500, "NEW_DOMAIN is not configured.");
-                newDomain = "localhost:5072";
+                return StatusCode(500, "NEW_DOMAIN is not configured.");
 
             var baseUrl = $"https://{newDomain}/api/chat/settings";
             var redirectUrl = QueryHelpers.AddQueryString(
