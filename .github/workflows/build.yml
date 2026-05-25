@@ -36,16 +36,36 @@ jobs:
           mkdir release-artifacts
       - name: Compress
         run: |
-          zip -rj release-artifacts/WissididomApi-linux-x64.zip WissididomApi/bin/Release/net10.0/linux-x64/publish/*
-          zip -rj release-artifacts/WissididomApi-linux-musl-x64.zip WissididomApi/bin/Release/net10.0/linux-musl-x64/publish/*
-          zip -rj release-artifacts/WissididomApi-linux-musl-arm64.zip WissididomApi/bin/Release/net10.0/linux-musl-arm64/publish/*
-          zip -rj release-artifacts/WissididomApi-linux-arm.zip WissididomApi/bin/Release/net10.0/linux-arm/publish/*
-          zip -rj release-artifacts/WissididomApi-linux-arm64.zip WissididomApi/bin/Release/net10.0/linux-arm64/publish/*
-          zip -rj release-artifacts/WissididomApi-win-x64.zip WissididomApi/bin/Release/net10.0/win-x64/publish/*
-          zip -rj release-artifacts/WissididomApi-win-x86.zip WissididomApi/bin/Release/net10.0/win-x86/publish/*
-          zip -rj release-artifacts/WissididomApi-win-arm64.zip WissididomApi/bin/Release/net10.0/win-arm64/publish/*
-          zip -rj release-artifacts/WissididomApi-macos-x64.zip WissididomApi/bin/Release/net10.0/osx-x64/publish/*
-          zip -rj release-artifacts/WissididomApi-macos-arm64.zip WissididomApi/bin/Release/net10.0/osx-arm64/publish/*
+          cd WissididomApi/bin/Release/net10.0/linux-x64/publish
+          zip -r ../../../../../../release-artifacts/WissididomApi-linux-x64.zip *
+          cd ../../../../../..
+          cd WissididomApi/bin/Release/net10.0/linux-musl-x64/publish
+          zip -r ../../../../../../release-artifacts/WissididomApi-linux-musl-x64.zip *
+          cd ../../../../../..
+          cd WissididomApi/bin/Release/net10.0/linux-musl-arm64/publish
+          zip -r ../../../../../../release-artifacts/WissididomApi-linux-musl-arm64.zip *
+          cd ../../../../../..
+          cd WissididomApi/bin/Release/net10.0/linux-arm/publish
+          zip -r ../../../../../../release-artifacts/WissididomApi-linux-arm.zip *
+          cd ../../../../../..
+          cd WissididomApi/bin/Release/net10.0/linux-arm64/publish
+          zip -r ../../../../../../release-artifacts/WissididomApi-linux-arm64.zip *
+          cd ../../../../../..
+          cd WissididomApi/bin/Release/net10.0/win-x64/publish
+          zip -r ../../../../../../release-artifacts/WissididomApi-win-x64.zip *
+          cd ../../../../../..
+          cd WissididomApi/bin/Release/net10.0/win-x86/publish
+          zip -r ../../../../../../release-artifacts/WissididomApi-win-x86.zip *
+          cd ../../../../../..
+          cd WissididomApi/bin/Release/net10.0/win-arm64/publish
+          zip -r ../../../../../../release-artifacts/WissididomApi-win-arm64.zip *
+          cd ../../../../../..
+          cd WissididomApi/bin/Release/net10.0/osx-x64/publish
+          zip -r ../../../../../../release-artifacts/WissididomApi-macos-x64.zip *
+          cd ../../../../../..
+          cd WissididomApi/bin/Release/net10.0/osx-arm64/publish
+          zip -r ../../../../../../release-artifacts/WissididomApi-macos-arm64.zip *
+          cd ../../../../../..
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
