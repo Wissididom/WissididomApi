@@ -33,7 +33,7 @@ public class LegacyChatController : ControllerBase
                 return BadRequest("Invalid redirect target.");
             }
 
-            return Redirect(parsedRedirect.ToString());
+            return RedirectPermanent(parsedRedirect.ToString());
         }
         catch (Exception e)
         {
